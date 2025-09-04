@@ -42,11 +42,11 @@ const BaseEquipmentSchema = Yup.object().shape({
     .min(0, 'Valor não pode ser negativo'),
   operatorIncluded: Yup.boolean(),
   operatorPrice: Yup.number()
-    .when('operatorIncluded', {
-      is: false,
-      then: Yup.number().min(0, 'Valor não pode ser negativo'),
-      otherwise: Yup.number().notRequired(),
-    }),
+  .when('operatorIncluded', {
+    is: (val: boolean) => val === false,
+    then: (schema) => schema.min(0, 'Valor não pode ser negativo'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   minRentalPeriod: Yup.number()
     .required('Período mínimo de locação é obrigatório')
     .min(1, 'Período deve ser maior que zero'),
