@@ -62,17 +62,14 @@ const Profile = () => {
   };
 
   const handleSaveChanges = () => {
-    // Here would be the API call to save user data
     setIsEditing(false);
     alert('Perfil atualizado com sucesso!');
   };
 
   const handleAddPaymentMethod = () => {
-    // Here would be the logic to add a new payment method
     alert('Funcionalidade em desenvolvimento');
   };
 
-  // CORREÇÃO 1: Adicionada tipagem para o parâmetro id
   const handleRemovePaymentMethod = (id: string | number) => {
     setUserData({
       ...userData,
@@ -363,7 +360,7 @@ const Profile = () => {
                               <div>
                                 <div className="flex items-center">
                                   <span className="text-lg font-medium text-gray-900">{method.brand}</span>
-                                  <span className="ml-2 text-sm text-gray-500">•••• {method.last4}</span>
+                                  <span className="ml-2 text-sm text-gray-500">**** {method.last4}</span>
                                 </div>
                                 <p className="text-sm text-gray-500">Expira em {method.expiry}</p>
                               </div>
