@@ -5,9 +5,8 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('personal');
   const [isEditing, setIsEditing] = useState(false);
 
-  // Mock user data
   const [userData, setUserData] = useState({
-    name: 'João Silva',
+    name: 'Joao Silva',
     email: 'joao.silva@email.com',
     phone: '(11) 98765-4321',
     document: '123.456.789-00',
@@ -16,7 +15,7 @@ const Profile = () => {
       number: '123',
       complement: 'Apto 45',
       neighborhood: 'Jardim Primavera',
-      city: 'São Paulo',
+      city: 'Sao Paulo',
       state: 'SP',
       zipCode: '01234-567'
     },
@@ -102,7 +101,7 @@ const Profile = () => {
                   onClick={handleSaveChanges}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
-                  Salvar Alterações
+                  Salvar Alteracoes
                 </button>
               </div>
             )}
@@ -121,19 +120,19 @@ const Profile = () => {
                   onClick={() => setActiveTab('address')}
                   className={`${activeTab === 'address' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                 >
-                  Endereço
+                  Endereco
                 </button>
                 <button
                   onClick={() => setActiveTab('payment')}
                   className={`${activeTab === 'payment' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                 >
-                  Métodos de Pagamento
+                  Metodos de Pagamento
                 </button>
                 <button
                   onClick={() => setActiveTab('notifications')}
                   className={`${activeTab === 'notifications' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                 >
-                  Notificações
+                  Notificacoes
                 </button>
               </nav>
             </div>
@@ -246,7 +245,7 @@ const Profile = () => {
 
                     <div className="sm:col-span-2">
                       <label htmlFor="address.number" className="block text-sm font-medium text-gray-700">
-                        Número
+                        Numero
                       </label>
                       <div className="mt-1">
                         <input
@@ -392,7 +391,7 @@ const Profile = () => {
                         onClick={handleAddPaymentMethod}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                       >
-                        Adicionar Método de Pagamento
+                        Adicionar Metodo de Pagamento
                       </button>
                     </div>
                   )}
@@ -416,9 +415,9 @@ const Profile = () => {
                       </div>
                       <div className="ml-3 text-sm">
                         <label htmlFor="notifications.email" className="font-medium text-gray-700">
-                          Notificações por Email
+                          Notificacoes por Email
                         </label>
-                        <p className="text-gray-500">Receba atualizações sobre suas solicitações e novidades por email.</p>
+                        <p className="text-gray-500">Receba atualizacoes sobre suas solicitacoes e novidades por email.</p>
                       </div>
                     </div>
 
@@ -436,9 +435,9 @@ const Profile = () => {
                       </div>
                       <div className="ml-3 text-sm">
                         <label htmlFor="notifications.sms" className="font-medium text-gray-700">
-                          Notificações por SMS
+                          Notificacoes por SMS
                         </label>
-                        <p className="text-gray-500">Receba alertas importantes sobre suas solicitações por SMS.</p>
+                        <p className="text-gray-500">Receba alertas importantes sobre suas solicitacoes por SMS.</p>
                       </div>
                     </div>
 
@@ -456,9 +455,9 @@ const Profile = () => {
                       </div>
                       <div className="ml-3 text-sm">
                         <label htmlFor="notifications.push" className="font-medium text-gray-700">
-                          Notificações Push
+                          Notificacoes Push
                         </label>
-                        <p className="text-gray-500">Receba notificações em tempo real no seu dispositivo.</p>
+                        <p className="text-gray-500">Receba notificacoes em tempo real no seu dispositivo.</p>
                       </div>
                     </div>
                   </div>
