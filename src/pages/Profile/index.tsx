@@ -38,7 +38,7 @@ const Profile = () => {
       setUserData({
         ...userData,
         [parent]: {
-          ...userData[parent as keyof typeof userData],
+          ...((userData[parent as keyof typeof userData] as Record<string, any>) || {}),
           [child]: value
         }
       });
