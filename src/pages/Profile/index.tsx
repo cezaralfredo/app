@@ -72,6 +72,7 @@ const Profile = () => {
     alert('Funcionalidade em desenvolvimento');
   };
 
+  // CORREÇÃO 1: Adicionada tipagem para o parâmetro id
   const handleRemovePaymentMethod = (id: string | number) => {
     setUserData({
       ...userData,
