@@ -50,7 +50,7 @@ const Profile = () => {
     }
   };
 
-  const handleNotificationChange = (e) => {
+  const handleNotificationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setUserData({
       ...userData,
