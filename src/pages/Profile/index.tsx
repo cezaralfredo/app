@@ -72,7 +72,7 @@ const Profile = () => {
     alert('Funcionalidade em desenvolvimento');
   };
 
-  const handleRemovePaymentMethod = (id) => {
+  const handleRemovePaymentMethod = (id: string | number) => {
     setUserData({
       ...userData,
       paymentMethods: userData.paymentMethods.filter(method => method.id !== id)
