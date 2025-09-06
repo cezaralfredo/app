@@ -1,12 +1,51 @@
 import React, { useState } from 'react';
+// First install react-router-dom and its types:
+// npm install react-router-dom @types/react-router-dom
 import { Link } from 'react-router-dom';
 
+// Definindo interfaces para tipagem
+interface Address {
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zipCode: string;
+}
+
+interface Notifications {
+  email: boolean;
+  sms: boolean;
+  push: boolean;
+}
+
+interface PaymentMethod {
+  id: number;
+  type: 'credit_card' | 'pix';
+  last4?: string;
+  brand?: string;
+  expiry?: string;
+  key?: string;
+  keyType?: string;
+}
+
+interface UserData {
+  name: string;
+  email: string;
+  phone: string;
+  document: string;
+  address: Address;
+  notifications: Notifications;
+  paymentMethods: PaymentMethod[];
+}
+
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'address' | 'payment' | 'notifications'>('personal');
   const [isEditing, setIsEditing] = useState(false);
 
   // Mock user data
-  const [userData, setUserData] = useState({
+  const [userData, setUserData] = useState<UserData>({
     name: 'João Silva',
     email: 'joao.silva@email.com',
     phone: '(11) 98765-4321',
@@ -35,17 +74,19 @@ const Profile = () => {
     const { name, value } = e.target;
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setUserData({
-        ...userData,
-        [parent]: {
-          ...((userData[parent as keyof typeof userData] as Record<string, any>) || {}),
-          [child]: value
-        }
-      });
+      if (parent === 'address') {
+        setUserData({
+          ...userData,
+          address: {
+            ...userData.address,
+            [child]: value
+          }
+        });
+      }
     } else {
       setUserData({
         ...userData,
-        [name]: value
+        [name as keyof typeof userData]: value
       });
     }
   };
@@ -56,23 +97,38 @@ const Profile = () => {
       ...userData,
       notifications: {
         ...userData.notifications,
-        [name]: checked
+        [name as keyof typeof userData.notifications]: checked
       }
     });
   };
 
   const handleSaveChanges = () => {
     // Here would be the API call to save user data
+    console.log('Dados a serem salvos:', userData);
     setIsEditing(false);
     alert('Perfil atualizado com sucesso!');
   };
 
   const handleAddPaymentMethod = () => {
     // Here would be the logic to add a new payment method
-    alert('Funcionalidade em desenvolvimento');
+    // Exemplo de implementação básica
+    const newPaymentMethod: PaymentMethod = {
+      id: Date.now(), // Usando timestamp como ID temporário
+      type: 'credit_card',
+      last4: '0000',
+      brand: 'Nova',
+      expiry: '01/30'
+    };
+    
+    setUserData({
+      ...userData,
+      paymentMethods: [...userData.paymentMethods, newPaymentMethod]
+    });
+    
+    alert('Novo método de pagamento adicionado com sucesso!');
   };
 
-  const handleRemovePaymentMethod = (id) => {
+  const handleRemovePaymentMethod = (id: number) => {
     setUserData({
       ...userData,
       paymentMethods: userData.paymentMethods.filter(method => method.id !== id)
