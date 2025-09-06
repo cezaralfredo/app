@@ -1,12 +1,51 @@
 import React, { useState } from 'react';
+// First install react-router-dom and its types:
+// npm install react-router-dom @types/react-router-dom
 import { Link } from 'react-router-dom';
 
+// Definindo interfaces para tipagem
+interface Address {
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zipCode: string;
+}
+
+interface Notifications {
+  email: boolean;
+  sms: boolean;
+  push: boolean;
+}
+
+interface PaymentMethod {
+  id: number;
+  type: 'credit_card' | 'pix';
+  last4?: string;
+  brand?: string;
+  expiry?: string;
+  key?: string;
+  keyType?: string;
+}
+
+interface UserData {
+  name: string;
+  email: string;
+  phone: string;
+  document: string;
+  address: Address;
+  notifications: Notifications;
+  paymentMethods: PaymentMethod[];
+}
+
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'address' | 'payment' | 'notifications'>('personal');
   const [isEditing, setIsEditing] = useState(false);
 
   // Mock user data
-  const [userData, setUserData] = useState({
+  const [userData, setUserData] = useState<UserData>({
     name: 'João Silva',
     email: 'joao.silva@email.com',
     phone: '(11) 98765-4321',
@@ -31,48 +70,65 @@ const Profile = () => {
     ]
   });
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setUserData({
-        ...userData,
-        [parent]: {
-          ...userData[parent],
-          [child]: value
-        }
-      });
+      if (parent === 'address') {
+        setUserData({
+          ...userData,
+          address: {
+            ...userData.address,
+            [child]: value
+          }
+        });
+      }
     } else {
       setUserData({
         ...userData,
-        [name]: value
+        [name as keyof typeof userData]: value
       });
     }
   };
 
-  const handleNotificationChange = (e) => {
+  const handleNotificationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setUserData({
       ...userData,
       notifications: {
         ...userData.notifications,
-        [name]: checked
+        [name as keyof typeof userData.notifications]: checked
       }
     });
   };
 
   const handleSaveChanges = () => {
     // Here would be the API call to save user data
+    console.log('Dados a serem salvos:', userData);
     setIsEditing(false);
     alert('Perfil atualizado com sucesso!');
   };
 
   const handleAddPaymentMethod = () => {
     // Here would be the logic to add a new payment method
-    alert('Funcionalidade em desenvolvimento');
+    // Exemplo de implementação básica
+    const newPaymentMethod: PaymentMethod = {
+      id: Date.now(), // Usando timestamp como ID temporário
+      type: 'credit_card',
+      last4: '0000',
+      brand: 'Nova',
+      expiry: '01/30'
+    };
+    
+    setUserData({
+      ...userData,
+      paymentMethods: [...userData.paymentMethods, newPaymentMethod]
+    });
+    
+    alert('Novo método de pagamento adicionado com sucesso!');
   };
 
-  const handleRemovePaymentMethod = (id) => {
+  const handleRemovePaymentMethod = (id: number) => {
     setUserData({
       ...userData,
       paymentMethods: userData.paymentMethods.filter(method => method.id !== id)
@@ -115,25 +171,25 @@ const Profile = () => {
               <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                 <button
                   onClick={() => setActiveTab('personal')}
-                  className={`${activeTab === 'personal' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  className={activeTab === 'personal' ? 'border-primary-500 text-primary-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'}
                 >
                   Dados Pessoais
                 </button>
                 <button
                   onClick={() => setActiveTab('address')}
-                  className={`${activeTab === 'address' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  className={activeTab === 'address' ? 'border-primary-500 text-primary-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'}
                 >
                   Endereço
                 </button>
                 <button
                   onClick={() => setActiveTab('payment')}
-                  className={`${activeTab === 'payment' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  className={activeTab === 'payment' ? 'border-primary-500 text-primary-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'}
                 >
                   Métodos de Pagamento
                 </button>
                 <button
                   onClick={() => setActiveTab('notifications')}
-                  className={`${activeTab === 'notifications' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  className={activeTab === 'notifications' ? 'border-primary-500 text-primary-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'}
                 >
                   Notificações
                 </button>
