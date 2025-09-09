@@ -9,7 +9,8 @@ import {
   ChartBarIcon,
   BuildingStorefrontIcon,
   CubeIcon,
-  UserIcon
+  UserIcon,
+  ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 
 // Tipos
@@ -534,7 +535,7 @@ const ProviderDashboard: React.FC = () => {
                                 Categoria: {equipment.category}
                               </p>
                             </div>
-                            <div className="mt-2 flex items-center text-sm font-medium text-gray-900 sm:mt-0">
+                            <div className="mt-2 flex items-center text-sm font-medium text-gray-9s00 sm:mt-0">
                               <p>
                                 {formatCurrency(equipment.dailyPrice)}/dia
                               </p>
@@ -866,8 +867,28 @@ const ProviderDashboard: React.FC = () => {
                   <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
                     <dl className="sm:divide-y sm:divide-gray-200">
                       <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Configurações de Notificação</dt>
+                        <dt className="text-sm font-medium text-gray-500">Nome do Responsável</dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                          <input
+                            type="text"
+                            className="max-w-lg block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
+                            defaultValue="Carlos Oliveira"
+                          />
+                        </dd>
+                      </div>
+                      <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-gray-500">Observações</dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                          <textarea
+                            rows={3}
+                            className="max-w-lg shadow-sm block w-full focus:ring-primary-500 focus:border-primary-500 sm:text-sm border border-gray-300 rounded-md"
+                            defaultValue="Empresa especializada em locação de equipamentos pesados para construção civil e industrial."
+                          />
+                        </dd>
+                      </div>
+                      <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-gray-500">Configurações de Notificação</dt>
+                        <dd className="mt-1 text-sm text-gray-9s00 sm:mt-0 sm:col-span-2">
                           <div className="space-y-2">
                             <div className="flex items-center">
                               <input
@@ -988,38 +1009,6 @@ const ProviderDashboard: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-export default ProviderDashboard; sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Nome do Responsável</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          <input
-                            type="text"
-                            className="max-w-lg block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-                            defaultValue="Carlos Oliveira"
-                          />
-                        </dd>
-                      </div>
-                      <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Observações</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          <textarea
-                            rows={3}
-                            className="max-w-lg shadow-sm block w-full focus:ring-primary-500 focus:border-primary-500 sm:text-sm border border-gray-300 rounded-md"
-                            defaultValue="Empresa especializada em locação de equipamentos pesados para construção civil e industrial."
-                          />
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
