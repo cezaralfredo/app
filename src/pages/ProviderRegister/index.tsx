@@ -13,7 +13,7 @@ const ProviderRegisterSchema = Yup.object().shape({
   companyName: Yup.string()
     .required('Razão social é obrigatória'),
   cnpj: Yup.string()
-    .matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/, 'CNPJ inválido. Use o formato: 00.000.000/0000-00')
+    .matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, 'CNPJ inválido. Use o formato: 00.000.000/0000-00')
     .required('CNPJ é obrigatório'),
   mainPhone: Yup.string()
     .matches(/^\(\d{2}\)\s\d{5}-\d{4}$/, 'Formato inválido. Use (99) 99999-9999')
@@ -510,9 +510,9 @@ const ProviderRegister: React.FC = () => {
                     />
                     <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
                       Eu aceito os{' '}
-                      <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                      <button type="button" className="font-medium text-primary-600 hover:text-primary-500">
                         termos e condições
-                      </a>
+                      </button>
                     </label>
                   </div>
                   <ErrorMessage name="terms" component="div" className="mt-1 text-sm text-red-600" />
