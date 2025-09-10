@@ -18,6 +18,7 @@ interface RegistrationStep1Data {
   email: string
   zipCode: string
   address: string
+  neighborhood: string
   city: string
   state: string
   serviceRadius: number
@@ -85,6 +86,7 @@ export const useProviderRegistration = ({ onSuccess, onError }: UseProviderRegis
         instagram: step1Data.socialMedia,
         zip_code: step1Data.zipCode.replace(/\D/g, ''),
         address: step1Data.address,
+        neighborhood: step1Data.neighborhood,
         city: step1Data.city,
         state: step1Data.state,
         service_radius_km: step1Data.serviceRadius,
