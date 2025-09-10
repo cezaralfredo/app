@@ -29,6 +29,8 @@ const ProviderRegisterSchema = Yup.object().shape({
     .required('CEP é obrigatório'),
   address: Yup.string()
     .required('Endereço é obrigatório'),
+  neighborhood: Yup.string()
+    .required('Bairro é obrigatório'),
   city: Yup.string()
     .required('Cidade é obrigatória'),
   state: Yup.string()
@@ -126,6 +128,7 @@ const ProviderRegister: React.FC = () => {
                 email: '',
                 zipCode: '',
                 address: '',
+                neighborhood: '',
                 city: '',
                 state: '',
                 serviceRadius: 50,
@@ -142,6 +145,7 @@ const ProviderRegister: React.FC = () => {
                 email: ProviderRegisterSchema.fields.email,
                 zipCode: ProviderRegisterSchema.fields.zipCode,
                 address: ProviderRegisterSchema.fields.address,
+                neighborhood: ProviderRegisterSchema.fields.neighborhood,
                 city: ProviderRegisterSchema.fields.city,
                 state: ProviderRegisterSchema.fields.state,
                 serviceRadius: ProviderRegisterSchema.fields.serviceRadius,
@@ -306,6 +310,21 @@ const ProviderRegister: React.FC = () => {
                         className="input"
                       />
                       <ErrorMessage name="address" component="div" className="mt-1 text-sm text-red-600" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="neighborhood" className="block text-sm font-medium text-gray-700">
+                      Bairro
+                    </label>
+                    <div className="mt-1">
+                      <Field
+                        id="neighborhood"
+                        name="neighborhood"
+                        type="text"
+                        className="input"
+                      />
+                      <ErrorMessage name="neighborhood" component="div" className="mt-1 text-sm text-red-600" />
                     </div>
                   </div>
 
