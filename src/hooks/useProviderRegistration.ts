@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService, providerService, documentService } from '../services/supabase'
-import { Provider, ProviderDocument } from '../services/supabase'
+import { Provider } from '../services/supabase'
 
 interface UseProviderRegistrationProps {
   onSuccess?: (provider: Provider) => void

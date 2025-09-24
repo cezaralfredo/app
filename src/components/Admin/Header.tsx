@@ -116,17 +116,11 @@ const AdminHeader: React.FC = () => {
               {userMenuOpen && (
                 <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                   <div className="py-1">
-                    <a
-                      href="#"
-                      className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
+                    <a href="/admin/profile" className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       <UserCircleIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
                       Perfil
                     </a>
-                    <a
-                      href="#"
-                      className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
+                    <a href="/admin/settings" className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       <CogIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
                       Configurações
                     </a>

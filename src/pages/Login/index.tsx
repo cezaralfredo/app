@@ -80,9 +80,9 @@ const Login: React.FC = () => {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Entre na sua conta</h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Ou{' '}
-          <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
+          <a href="/register" className="font-medium text-primary-600 hover:text-primary-500">
             cadastre-se gratuitamente
-          </Link>
+          </a>
         </p>
       </div>
 
@@ -174,7 +174,7 @@ const Login: React.FC = () => {
                   </div>
 
                   <div className="text-sm">
-                    <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                    <a href="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
                       Esqueceu a senha?
                     </a>
                   </div>
