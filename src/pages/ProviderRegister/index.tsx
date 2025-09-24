@@ -1,83 +1,167 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useProviderRegistration, useCepSearch } from '../../hooks/useProviderRegistration';
 
 const ProviderRegisterSchema = Yup.object().shape({
+  // Dados básicos
   responsibleName: Yup.string()
     .min(2, 'Nome muito curto')
-    .max(50, 'Nome muito longo')
+    .max(100, 'Nome muito longo')
     .required('Nome do responsável é obrigatório'),
+  responsibleDocument: Yup.string()
+    .matches(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF inválido. Use o formato: 000.000.000-00')
+    .required('CPF do responsável é obrigatório'),
+  
+  // Dados da empresa
   fantasyName: Yup.string()
+    .max(200, 'Nome fantasia muito longo')
     .required('Nome fantasia é obrigatório'),
   companyName: Yup.string()
+    .max(200, 'Razão social muito longa')
     .required('Razão social é obrigatória'),
   cnpj: Yup.string()
     .matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, 'CNPJ inválido. Use o formato: 00.000.000/0000-00')
     .required('CNPJ é obrigatório'),
+  stateRegistration: Yup.string()
+    .max(50, 'Inscrição estadual muito longa'),
+  municipalRegistration: Yup.string()
+    .max(50, 'Inscrição municipal muito longa'),
+  
+  // Contato
   mainPhone: Yup.string()
     .matches(/^\(\d{2}\)\s\d{5}-\d{4}$/, 'Formato inválido. Use (99) 99999-9999')
     .required('Telefone principal é obrigatório'),
   secondaryPhone: Yup.string()
     .matches(/^\(\d{2}\)\s\d{5}-\d{4}$/, 'Formato inválido. Use (99) 99999-9999')
     .nullable(),
+  whatsappPhone: Yup.string()
+    .matches(/^\(\d{2}\)\s\d{5}-\d{4}$/, 'Formato inválido. Use (99) 99999-9999')
+    .required('WhatsApp é obrigatório'),
   email: Yup.string()
     .email('Email inválido')
     .required('Email é obrigatório'),
+  
+  // Endereço
   zipCode: Yup.string()
     .matches(/^\d{5}-\d{3}$/, 'CEP inválido. Use o formato: 00000-000')
     .required('CEP é obrigatório'),
   address: Yup.string()
+    .max(300, 'Endereço muito longo')
     .required('Endereço é obrigatório'),
+  number: Yup.string()
+    .max(20, 'Número muito longo')
+    .required('Número é obrigatório'),
+  complement: Yup.string()
+    .max(200, 'Complemento muito longo'),
   neighborhood: Yup.string()
+    .max(100, 'Bairro muito longo')
     .required('Bairro é obrigatório'),
   city: Yup.string()
+    .max(100, 'Cidade muito longa')
     .required('Cidade é obrigatória'),
   state: Yup.string()
+    .length(2, 'Estado deve ter 2 caracteres')
     .required('Estado é obrigatório'),
+  
+  // Serviços
   serviceRadius: Yup.number()
     .min(1, 'Raio de atendimento deve ser maior que 0')
+    .max(1000, 'Raio de atendimento muito grande')
     .required('Raio de atendimento é obrigatório'),
+  serviceCities: Yup.array()
+    .of(Yup.string())
+    .min(1, 'Selecione pelo menos uma cidade'),
+  serviceStates: Yup.array()
+    .of(Yup.string())
+    .min(1, 'Selecione pelo menos um estado'),
+  
+  // Redes sociais
   website: Yup.string()
     .url('URL inválida'),
-  socialMedia: Yup.string(),
+  instagram: Yup.string()
+    .max(100, 'Instagram muito longo'),
+  facebook: Yup.string()
+    .max(100, 'Facebook muito longo'),
+  
+  // Segurança
   password: Yup.string()
-    .min(6, 'Senha deve ter pelo menos 6 caracteres')
+    .min(8, 'Senha deve ter pelo menos 8 caracteres')
+    .matches(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+    .matches(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+    .matches(/\d/, 'Senha deve conter pelo menos um número')
+    .matches(/[^a-zA-Z0-9]/, 'Senha deve conter pelo menos um caractere especial')
     .required('Senha é obrigatória'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], 'As senhas não conferem')
     .required('Confirmação de senha é obrigatória'),
+  
+  // Termos e documentos
   terms: Yup.boolean()
-    .oneOf([true], 'Você deve aceitar os termos e condições'),
+    .oneOf([true], 'Você deve aceitar os termos e condições')
+    .required('Aceite dos termos é obrigatório'),
   contractUpload: Yup.mixed()
-    .required('Upload do contrato social é obrigatório')
+    .test('fileSize', 'Arquivo muito grande (máx. 5MB)', (value) => 
+      !value || (value && (value as any).size <= 5 * 1024 * 1024)
+    )
+    .test('fileType', 'Formato não suportado', (value) =>
+      !value || (value && ['application/pdf', 'image/jpeg', 'image/png'].includes((value as any).type))
+    )
+    .required('Upload do contrato social é obrigatório'),
+  cnpjDocumentUpload: Yup.mixed()
+    .test('fileSize', 'Arquivo muito grande (máx. 5MB)', (value) => 
+      !value || (value && (value as any).size <= 5 * 1024 * 1024)
+    )
+    .test('fileType', 'Formato não suportado', (value) =>
+      !value || (value && ['application/pdf', 'image/jpeg', 'image/png'].includes((value as any).type))
+    )
+    .required('Upload do CNPJ é obrigatório')
 });
 
 const ProviderRegister: React.FC = () => {
   const navigate = useNavigate();
-  const [registerError, setRegisterError] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({});
+  const {
+    isLoading,
+    error: registerError,
+    currentStep,
+    step1Data,
+    handleStep1Submit,
+    handleStep2Submit,
+    goBackToStep1,
+    clearError
+  } = useProviderRegistration({
+    onSuccess: (provider) => {
+      navigate('/provider/dashboard', {
+        replace: true,
+        state: { success: true, message: 'Cadastro de fornecedor concluído com sucesso!' }
+      });
+    },
+    onError: (error) => {
+      console.error('Erro no cadastro:', error);
+    }
+  });
 
-  const handleSubmitStep1 = (values: any) => {
-    setFormData(values);
-    setCurrentStep(2);
+  const { searchCep, addressData, isLoading: cepLoading, error: cepError } = useCepSearch();
+
+  const handleSubmitStep1 = async (values: any) => {
+    await handleStep1Submit(values);
     window.scrollTo(0, 0);
   };
 
   const handleSubmitStep2 = async (values: any) => {
-    try {
-      // Aqui seria implementada a lógica de registro com backend
-      // Combinando dados do step 1 com step 2
-      const completeData = { ...formData, ...values };
-      console.log('Registro de prestador com:', completeData);
-      
-      // Simular registro bem-sucedido e redirecionar
-      navigate('/provider-dashboard', { 
-        state: { message: 'Cadastro realizado com sucesso! Agora você pode adicionar seus equipamentos.' } 
-      });
-    } catch (error) {
-      setRegisterError('Falha no cadastro. Tente novamente.');
+    await handleStep2Submit(values);
+  };
+
+  const handleCepBlur = async (cep: string, setFieldValue: any) => {
+    if (cep && cep.length === 9) {
+      const addressData = await searchCep(cep);
+      if (addressData) {
+        setFieldValue('address', addressData.logradouro || '');
+        setFieldValue('neighborhood', addressData.bairro || '');
+        setFieldValue('city', addressData.localidade || '');
+        setFieldValue('state', addressData.uf || '');
+      }
     }
   };
 
@@ -119,85 +203,187 @@ const ProviderRegister: React.FC = () => {
           {currentStep === 1 ? (
             <Formik
               initialValues={{
+                // Dados básicos
                 responsibleName: '',
+                responsibleDocument: '',
+                
+                // Dados da empresa
                 fantasyName: '',
                 companyName: '',
                 cnpj: '',
+                stateRegistration: '',
+                municipalRegistration: '',
+                
+                // Contato
                 mainPhone: '',
                 secondaryPhone: '',
+                whatsappPhone: '',
                 email: '',
+                
+                // Endereço
                 zipCode: '',
                 address: '',
+                number: '',
+                complement: '',
                 neighborhood: '',
                 city: '',
                 state: '',
+                
+                // Serviços
                 serviceRadius: 50,
+                serviceCities: [],
+                serviceStates: [],
+                
+                // Redes sociais
                 website: '',
-                socialMedia: ''
+                instagram: '',
+                facebook: ''
               }}
               validationSchema={Yup.object({
                 responsibleName: ProviderRegisterSchema.fields.responsibleName,
+                responsibleDocument: ProviderRegisterSchema.fields.responsibleDocument,
                 fantasyName: ProviderRegisterSchema.fields.fantasyName,
                 companyName: ProviderRegisterSchema.fields.companyName,
                 cnpj: ProviderRegisterSchema.fields.cnpj,
+                stateRegistration: ProviderRegisterSchema.fields.stateRegistration,
+                municipalRegistration: ProviderRegisterSchema.fields.municipalRegistration,
                 mainPhone: ProviderRegisterSchema.fields.mainPhone,
                 secondaryPhone: ProviderRegisterSchema.fields.secondaryPhone,
+                whatsappPhone: ProviderRegisterSchema.fields.whatsappPhone,
                 email: ProviderRegisterSchema.fields.email,
                 zipCode: ProviderRegisterSchema.fields.zipCode,
                 address: ProviderRegisterSchema.fields.address,
+                number: ProviderRegisterSchema.fields.number,
+                complement: ProviderRegisterSchema.fields.complement,
                 neighborhood: ProviderRegisterSchema.fields.neighborhood,
                 city: ProviderRegisterSchema.fields.city,
                 state: ProviderRegisterSchema.fields.state,
                 serviceRadius: ProviderRegisterSchema.fields.serviceRadius,
+                serviceCities: ProviderRegisterSchema.fields.serviceCities,
+                serviceStates: ProviderRegisterSchema.fields.serviceStates,
                 website: ProviderRegisterSchema.fields.website,
-                socialMedia: ProviderRegisterSchema.fields.socialMedia
+                instagram: ProviderRegisterSchema.fields.instagram,
+                facebook: ProviderRegisterSchema.fields.facebook
               })}
               onSubmit={handleSubmitStep1}
             >
               {({ isSubmitting }) => (
                 <Form className="space-y-6">
-                  <div>
-                    <label htmlFor="responsibleName" className="block text-sm font-medium text-gray-700">
-                      Nome do Responsável
-                    </label>
-                    <div className="mt-1">
-                      <Field
-                        id="responsibleName"
-                        name="responsibleName"
-                        type="text"
-                        className="input"
-                      />
-                      <ErrorMessage name="responsibleName" component="div" className="mt-1 text-sm text-red-600" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="responsibleName" className="block text-sm font-medium text-gray-700">
+                        Nome do Responsável *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="responsibleName"
+                          name="responsibleName"
+                          type="text"
+                          className="input"
+                          placeholder="João da Silva"
+                        />
+                        <ErrorMessage name="responsibleName" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="responsibleDocument" className="block text-sm font-medium text-gray-700">
+                        CPF do Responsável *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="responsibleDocument"
+                          name="responsibleDocument"
+                          type="text"
+                          className="input"
+                          placeholder="000.000.000-00"
+                        />
+                        <ErrorMessage name="responsibleDocument" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="fantasyName" className="block text-sm font-medium text-gray-700">
-                      Nome Fantasia
-                    </label>
-                    <div className="mt-1">
-                      <Field
-                        id="fantasyName"
-                        name="fantasyName"
-                        type="text"
-                        className="input"
-                      />
-                      <ErrorMessage name="fantasyName" component="div" className="mt-1 text-sm text-red-600" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="fantasyName" className="block text-sm font-medium text-gray-700">
+                        Nome Fantasia *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="fantasyName"
+                          name="fantasyName"
+                          type="text"
+                          className="input"
+                          placeholder="Minha Empresa LTDA"
+                        />
+                        <ErrorMessage name="fantasyName" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+                        Razão Social *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="companyName"
+                          name="companyName"
+                          type="text"
+                          className="input"
+                          placeholder="Minha Empresa Comércio e Serviços LTDA"
+                        />
+                        <ErrorMessage name="companyName" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
-                      Razão Social
-                    </label>
-                    <div className="mt-1">
-                      <Field
-                        id="companyName"
-                        name="companyName"
-                        type="text"
-                        className="input"
-                      />
-                      <ErrorMessage name="companyName" component="div" className="mt-1 text-sm text-red-600" />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label htmlFor="cnpj" className="block text-sm font-medium text-gray-700">
+                        CNPJ *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="cnpj"
+                          name="cnpj"
+                          type="text"
+                          placeholder="00.000.000/0000-00"
+                          className="input"
+                        />
+                        <ErrorMessage name="cnpj" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="stateRegistration" className="block text-sm font-medium text-gray-700">
+                        Inscrição Estadual
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="stateRegistration"
+                          name="stateRegistration"
+                          type="text"
+                          className="input"
+                          placeholder="000.000.000"
+                        />
+                        <ErrorMessage name="stateRegistration" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="municipalRegistration" className="block text-sm font-medium text-gray-700">
+                        Inscrição Municipal
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="municipalRegistration"
+                          name="municipalRegistration"
+                          type="text"
+                          className="input"
+                          placeholder="000000"
+                        />
+                        <ErrorMessage name="municipalRegistration" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
                     </div>
                   </div>
 
@@ -249,25 +435,78 @@ const ProviderRegister: React.FC = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <div className="mt-1">
-                      <Field
-                        id="email"
-                        name="email"
-                        type="email"
-                        className="input"
-                      />
-                      <ErrorMessage name="email" component="div" className="mt-1 text-sm text-red-600" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                        Email *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="email"
+                          name="email"
+                          type="email"
+                          className="input"
+                          placeholder="seu@email.com"
+                        />
+                        <ErrorMessage name="email" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                        Telefone *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          className="input"
+                          placeholder="(11) 99999-9999"
+                        />
+                        <ErrorMessage name="phone" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="whatsappPhone" className="block text-sm font-medium text-gray-700">
+                        WhatsApp
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="whatsappPhone"
+                          name="whatsappPhone"
+                          type="tel"
+                          className="input"
+                          placeholder="(11) 99999-9999"
+                        />
+                        <ErrorMessage name="whatsappPhone" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="website" className="block text-sm font-medium text-gray-700">
+                        Website
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="website"
+                          name="website"
+                          type="url"
+                          className="input"
+                          placeholder="https://www.suaempresa.com.br"
+                        />
+                        <ErrorMessage name="website" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                       <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
-                        CEP
+                        CEP *
                       </label>
                       <div className="mt-1">
                         <Field
@@ -276,62 +515,81 @@ const ProviderRegister: React.FC = () => {
                           type="text"
                           placeholder="00000-000"
                           className="input"
+                          onBlur={handleCepBlur}
                         />
                         <ErrorMessage name="zipCode" component="div" className="mt-1 text-sm text-red-600" />
                       </div>
                     </div>
 
-                    <div>
-                      <label htmlFor="serviceRadius" className="block text-sm font-medium text-gray-700">
-                        Raio de Atendimento (km)
+                    <div className="md:col-span-2">
+                      <label htmlFor="street" className="block text-sm font-medium text-gray-700">
+                        Logradouro *
                       </label>
                       <div className="mt-1">
                         <Field
-                          id="serviceRadius"
-                          name="serviceRadius"
-                          type="number"
-                          min="1"
+                          id="street"
+                          name="street"
+                          type="text"
                           className="input"
+                          placeholder="Rua das Flores"
                         />
-                        <ErrorMessage name="serviceRadius" component="div" className="mt-1 text-sm text-red-600" />
+                        <ErrorMessage name="street" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="number" className="block text-sm font-medium text-gray-700">
+                        Número *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="number"
+                          name="number"
+                          type="text"
+                          className="input"
+                          placeholder="123"
+                        />
+                        <ErrorMessage name="number" component="div" className="mt-1 text-sm text-red-600" />
                       </div>
                     </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                      Endereço Completo
-                    </label>
-                    <div className="mt-1">
-                      <Field
-                        id="address"
-                        name="address"
-                        type="text"
-                        className="input"
-                      />
-                      <ErrorMessage name="address" component="div" className="mt-1 text-sm text-red-600" />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label htmlFor="complement" className="block text-sm font-medium text-gray-700">
+                        Complemento
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="complement"
+                          name="complement"
+                          type="text"
+                          className="input"
+                          placeholder="Apto 101"
+                        />
+                        <ErrorMessage name="complement" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <label htmlFor="neighborhood" className="block text-sm font-medium text-gray-700">
-                      Bairro
-                    </label>
-                    <div className="mt-1">
-                      <Field
-                        id="neighborhood"
-                        name="neighborhood"
-                        type="text"
-                        className="input"
-                      />
-                      <ErrorMessage name="neighborhood" component="div" className="mt-1 text-sm text-red-600" />
+                    <div>
+                      <label htmlFor="neighborhood" className="block text-sm font-medium text-gray-700">
+                        Bairro *
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="neighborhood"
+                          name="neighborhood"
+                          type="text"
+                          className="input"
+                          placeholder="Centro"
+                        />
+                        <ErrorMessage name="neighborhood" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                        Cidade
+                        Cidade *
                       </label>
                       <div className="mt-1">
                         <Field
@@ -339,14 +597,17 @@ const ProviderRegister: React.FC = () => {
                           name="city"
                           type="text"
                           className="input"
+                          placeholder="São Paulo"
                         />
                         <ErrorMessage name="city" component="div" className="mt-1 text-sm text-red-600" />
                       </div>
                     </div>
+                  </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                        Estado
+                        Estado *
                       </label>
                       <div className="mt-1">
                         <Field as="select" id="state" name="state" className="input">
@@ -382,37 +643,119 @@ const ProviderRegister: React.FC = () => {
                         <ErrorMessage name="state" component="div" className="mt-1 text-sm text-red-600" />
                       </div>
                     </div>
+
+                    <div>
+                      <label htmlFor="serviceRadius" className="block text-sm font-medium text-gray-700">
+                        Raio de Atendimento (km)
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="serviceRadius"
+                          name="serviceRadius"
+                          type="number"
+                          min="1"
+                          className="input"
+                          placeholder="50"
+                        />
+                        <ErrorMessage name="serviceRadius" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="website" className="block text-sm font-medium text-gray-700">
-                      Website (opcional)
-                    </label>
-                    <div className="mt-1">
-                      <Field
-                        id="website"
-                        name="website"
-                        type="text"
-                        placeholder="https://www.seusite.com.br"
-                        className="input"
-                      />
-                      <ErrorMessage name="website" component="div" className="mt-1 text-sm text-red-600" />
+
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="instagram" className="block text-sm font-medium text-gray-700">
+                        Instagram
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="instagram"
+                          name="instagram"
+                          type="text"
+                          className="input"
+                          placeholder="@suaempresa"
+                        />
+                        <ErrorMessage name="instagram" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="facebook" className="block text-sm font-medium text-gray-700">
+                        Facebook
+                      </label>
+                      <div className="mt-1">
+                        <Field
+                          id="facebook"
+                          name="facebook"
+                          type="text"
+                          className="input"
+                          placeholder="suaempresa"
+                        />
+                        <ErrorMessage name="facebook" component="div" className="mt-1 text-sm text-red-600" />
+                      </div>
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="socialMedia" className="block text-sm font-medium text-gray-700">
-                      Instagram/Facebook (opcional)
+                    <label htmlFor="serviceCities" className="block text-sm font-medium text-gray-700">
+                      Cidades de Atendimento *
                     </label>
                     <div className="mt-1">
                       <Field
-                        id="socialMedia"
-                        name="socialMedia"
-                        type="text"
-                        placeholder="@suaempresa"
+                        id="serviceCities"
+                        name="serviceCities"
+                        as="textarea"
+                        rows={3}
                         className="input"
+                        placeholder="São Paulo, Campinas, Santos, Guarulhos (separadas por vírgula)"
                       />
-                      <ErrorMessage name="socialMedia" component="div" className="mt-1 text-sm text-red-600" />
+                      <ErrorMessage name="serviceCities" component="div" className="mt-1 text-sm text-red-600" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="serviceStates" className="block text-sm font-medium text-gray-700">
+                      Estados de Atendimento *
+                    </label>
+                    <div className="mt-1">
+                      <Field
+                        id="serviceStates"
+                        name="serviceStates"
+                        as="select"
+                        multiple
+                        className="input h-32"
+                      >
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
+                      </Field>
+                      <ErrorMessage name="serviceStates" component="div" className="mt-1 text-sm text-red-600" />
                     </div>
                   </div>
 
@@ -520,7 +863,7 @@ const ProviderRegister: React.FC = () => {
                   <div className="flex space-x-4">
                     <button
                       type="button"
-                      onClick={() => setCurrentStep(1)}
+                      onClick={goBackToStep1}
                       className="flex-1 btn-secondary py-2"
                     >
                       Voltar

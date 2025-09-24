@@ -229,7 +229,7 @@ const Register: React.FC = () => {
           <div className="mt-6">
             <p className="text-center text-sm text-gray-600">
               É uma empresa prestadora de serviços?{' '}
-              <Link to="/provider-register" className="font-medium text-primary-600 hover:text-primary-500">
+              <Link to="/provider/register" className="font-medium text-primary-600 hover:text-primary-500">
                 Cadastre-se como prestador
               </Link>
             </p>

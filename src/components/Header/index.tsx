@@ -12,14 +12,19 @@ const Header: React.FC = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/">
-                <img
-                  className="h-8 w-auto"
-                  src="/logo.svg"
-                  alt="EQUIPAMAX"
-                />
+              <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                <div className="bg-primary-600 p-2 rounded-lg shadow-md">
+                  <img
+                    className="h-10 w-auto filter brightness-0 invert"
+                    src="/logo.svg"
+                    alt="EQUIPAMAX"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-primary-600 leading-tight">EQUIPAMAX</span>
+                  <span className="text-xs text-gray-500 font-medium">Equipamentos Pesados</span>
+                </div>
               </Link>
-              <span className="ml-2 text-xl font-bold text-primary-600">EQUIPAMAX</span>
             </div>
             <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link

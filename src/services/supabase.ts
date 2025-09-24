@@ -1,10 +1,54 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
+const rawSupabaseUrl = process.env.REACT_APP_SUPABASE_URL
+const rawSupabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
+
+// Sanitize: trim, remove surrounding quotes, and strip trailing slashes from URL
+const supabaseUrl = rawSupabaseUrl?.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/g, '')
+const supabaseAnonKey = rawSupabaseAnonKey?.trim().replace(/^['"]|['"]$/g, '')
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase URL and Anon Key must be provided in environment variables')
+}
+
+// Dev warnings to help diagnose common mistakes without leaking secrets
+if (process.env.NODE_ENV !== 'production') {
+  const hadQuotesUrl = /(^['"])|(['"]$)/.test(rawSupabaseUrl || '')
+  const hadQuotesKey = /(^['"])|(['"]$)/.test(rawSupabaseAnonKey || '')
+  if (hadQuotesUrl || hadQuotesKey) {
+    // eslint-disable-next-line no-console
+    console.warn('[Supabase] As variáveis REACT_APP_SUPABASE_URL/ANON_KEY aparentam conter aspas. Elas foram removidas automaticamente. Remova as aspas do seu .env para evitar erros.')
+  }
+  const urlHostPattern = /^https:\/\/[a-z0-9-]+\.supabase\.co$/i
+  if (!urlHostPattern.test(supabaseUrl)) {
+    // eslint-disable-next-line no-console
+    console.warn('[Supabase] A URL não corresponde ao padrão esperado "https://<project-ref>.supabase.co". Verifique REACT_APP_SUPABASE_URL.')
+  }
+  
+  // Verificação detalhada da chave JWT
+  try {
+    const jwtParts = supabaseAnonKey.split('.')
+    if (jwtParts.length !== 3) {
+      console.warn('[Supabase] A chave anônima não parece ser um JWT válido (deve ter 3 partes separadas por pontos)')
+    } else {
+      const payload = JSON.parse(atob(jwtParts[1]))
+      const now = Math.floor(Date.now() / 1000)
+      if (payload.exp && payload.exp < now) {
+        console.warn('[Supabase] A chave anônima está EXPIRADA. Gere uma nova chave no dashboard do Supabase.')
+      }
+      if (payload.iss !== 'supabase') {
+        console.warn('[Supabase] A chave anônima não é do Supabase (issuer incorreto)')
+      }
+    }
+  } catch (e) {
+    console.warn('[Supabase] Não foi possível analisar a chave JWT:', e)
+  }
+}
+
+// Log para debug (apenas desenvolvimento)
+if (process.env.NODE_ENV !== 'production') {
+  console.log('[Supabase] URL:', supabaseUrl)
+  console.log('[Supabase] Chave anônima:', supabaseAnonKey?.substring(0, 20) + '...')
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
@@ -140,8 +184,30 @@ export const authService = {
       password
     })
 
-    if (error) throw error
+    if (error) {
+      // Verifica se o erro é de email não confirmado
+      if (error.message?.toLowerCase().includes('email not confirmed')) {
+        throw new Error('EMAIL_NOT_CONFIRMED')
+      }
+      throw error
+    }
     return data
+  },
+
+  async resendConfirmation(email: string, passwordFallback?: string) {
+    // Re-executar signUp para forçar reenvio do e-mail de confirmação
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: passwordFallback || Math.random().toString(36) + 'A1!',
+      options: {
+        emailRedirectTo: window.location.origin
+      }
+    })
+
+    if (error) {
+      throw error
+    }
+    return { status: 'ok', detail: 'E-mail de confirmação reenviado (verifique spam).' }
   },
 
   async signOut() {
@@ -152,6 +218,36 @@ export const authService = {
   async getCurrentUser() {
     const { data: { user } } = await supabase.auth.getUser()
     return user
+  },
+
+  onAuthStateChange(callback: (event: any, session: any) => void) {
+    return supabase.auth.onAuthStateChange(callback);
+  },
+
+  // RBAC helpers
+  async isCurrentUserAdmin(): Promise<boolean> {
+    const { data, error } = await supabase.rpc('is_admin')
+    if (error) return false
+    return !!data
+  },
+
+  async ensureDesignatedAdminBootstrap(): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser()
+    const email = user?.email
+    if (!user?.id || !email) return
+
+    // Apenas para o email designado, tentar criar role admin se ainda não existir
+    if (email === 'gerandoparceria@gmail.com') {
+      try {
+        await supabase
+          .from('user_roles')
+          .insert({ user_id: user.id, role: 'admin' })
+          .select()
+          .single()
+      } catch (e) {
+        // ignora erros (ex: já existe)
+      }
+    }
   }
 }
 

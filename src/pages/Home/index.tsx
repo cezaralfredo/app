@@ -70,7 +70,7 @@ const Home: React.FC = () => {
                 Buscar Equipamentos
               </Link>
               <Link
-                to="/provider-register"
+                to="/provider/register"
                 className="ml-4 btn-outline bg-white text-lg px-8 py-3"
               >
                 Seja um Prestador
@@ -255,7 +255,7 @@ const Home: React.FC = () => {
             </div>
             <div className="ml-3 inline-flex rounded-md shadow">
               <Link
-                to="/provider-register"
+                to="/provider/register"
                 className="btn-outline bg-white text-lg px-8 py-3"
               >
                 Cadastrar como Prestador

@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import AdminAuthModal from '../AdminAuthModal';
 
 const Footer: React.FC = () => {
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+
+  const handleAdminAccess = () => {
+    setIsAdminModalOpen(true);
+  };
+
   return (
     <footer className="bg-gray-800 text-white">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -33,7 +40,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2 text-sm text-gray-300">
               <li><Link to="/" className="hover:text-primary-400">Início</Link></li>
               <li><Link to="/search" className="hover:text-primary-400">Buscar Equipamentos</Link></li>
-              <li><Link to="/provider-register" className="hover:text-primary-400">Seja um Prestador</Link></li>
+              <li><Link to="/provider/register" className="hover:text-primary-400">Seja um Prestador</Link></li>
               <li><Link to="/login" className="hover:text-primary-400">Entrar</Link></li>
               <li><Link to="/register" className="hover:text-primary-400">Cadastrar</Link></li>
               <li><Link to="/faq" className="hover:text-primary-400">FAQ</Link></li>
@@ -76,9 +83,24 @@ const Footer: React.FC = () => {
             <Link to="/privacy" className="hover:text-primary-400">Política de Privacidade</Link>
             <Link to="/faq" className="hover:text-primary-400">FAQ</Link>
           </div>
+          <div className="mb-4">
+            <button 
+              id="admin-access-btn"
+              onClick={handleAdminAccess}
+              className="bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white px-4 py-2 rounded-md text-xs font-medium transition-colors duration-200 border border-gray-600 hover:border-gray-500"
+              title="Acesso Administrativo"
+            >
+              🔐 Admin
+            </button>
+          </div>
           <p>&copy; {new Date().getFullYear()} EQUIPAMAX. Todos os direitos reservados.</p>
         </div>
       </div>
+      
+      <AdminAuthModal 
+        isOpen={isAdminModalOpen} 
+        onClose={() => setIsAdminModalOpen(false)} 
+      />
     </footer>
   );
 };

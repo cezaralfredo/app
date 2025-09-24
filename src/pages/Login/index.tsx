@@ -1,31 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useAuth } from '../../contexts/AuthContext';
 
-const LoginSchema = Yup.object().shape({
-  email: Yup.string()
-    .email('Email inválido')
-    .required('Email é obrigatório'),
-  password: Yup.string()
-    .required('Senha é obrigatória')
-});
+interface LoginFormValues {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { signIn, loading: authLoading, error: authError, isAdmin, resendConfirmation, emailNotConfirmed } = useAuth();
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (values: { email: string; password: string }) => {
+  useEffect(() => {
+    if (authError) setLoginError(authError);
+  }, [authError]);
+
+  const validationSchema = Yup.object({
+    email: Yup.string()
+      .email('Email inválido')
+      .required('Email é obrigatório'),
+    password: Yup.string()
+      .min(6, 'Senha deve ter pelo menos 6 caracteres')
+      .required('Senha é obrigatória'),
+  });
+
+  const handleSubmit = async (values: LoginFormValues, { setSubmitting }: any) => {
+    setLoginError(null);
+    setInfoMessage(null);
     try {
-      // Aqui seria implementada a lógica de autenticação com backend
-      // Por enquanto, apenas simulamos um login bem-sucedido
-      console.log('Login com:', values);
-      
-      // Simular login bem-sucedido e redirecionar
-      localStorage.setItem('isAuthenticated', 'true');
-      navigate('/dashboard');
-    } catch (error) {
-      setLoginError('Falha no login. Verifique suas credenciais.');
+      await signIn(values.email, values.password);
+      if (values.rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+        localStorage.setItem('userEmail', values.email);
+      }
+      // Redirecionar admin para /admin; demais para dashboard do cliente
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/client/dashboard');
+      }
+    } catch (error: any) {
+      const message = error?.message || 'Falha no login. Verifique suas credenciais.';
+      if (message === 'EMAIL_NOT_CONFIRMED') {
+        setLoginError('E-mail não confirmado. Reenvie o e-mail de confirmação para continuar.');
+      } else {
+        setLoginError(message);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResend = async (email: string, password: string) => {
+    try {
+      setInfoMessage(null);
+      setLoginError(null);
+      const result = await resendConfirmation(email, password);
+      setInfoMessage(result?.detail || 'E-mail de confirmação reenviado.');
+    } catch (e: any) {
+      setLoginError(e?.message || 'Não foi possível reenviar a confirmação.');
     }
   };
 
@@ -51,11 +89,11 @@ const Login: React.FC = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <Formik
-            initialValues={{ email: '', password: '' }}
-            validationSchema={LoginSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ isSubmitting }) => (
+          initialValues={{ email: '', password: '', rememberMe: false }}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+            {({ isSubmitting, values }) => (
               <Form className="space-y-6">
                 {loginError && (
                   <div className="bg-red-50 border-l-4 border-red-500 p-4">
@@ -67,7 +105,25 @@ const Login: React.FC = () => {
                       </div>
                       <div className="ml-3">
                         <p className="text-sm text-red-700">{loginError}</p>
+                        {(emailNotConfirmed || loginError.includes('E-mail não confirmado')) && (
+                          <button
+                            type="button"
+                            onClick={() => handleResend(values.email, values.password)}
+                            className="mt-2 text-sm text-primary-700 hover:text-primary-800 underline disabled:opacity-50"
+                            disabled={authLoading || !values.email}
+                          >
+                            Reenviar e-mail de confirmação
+                          </button>
+                        )}
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {infoMessage && (
+                  <div className="bg-green-50 border-l-4 border-green-500 p-4">
+                    <div className="ml-3">
+                      <p className="text-sm text-green-700">{infoMessage}</p>
                     </div>
                   </div>
                 )}
@@ -106,13 +162,13 @@ const Login: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <input
-                      id="remember_me"
-                      name="remember_me"
+                    <Field
+                      id="rememberMe"
+                      name="rememberMe"
                       type="checkbox"
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-900">
+                    <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-900">
                       Lembrar-me
                     </label>
                   </div>
@@ -127,10 +183,10 @@ const Login: React.FC = () => {
                 <div>
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || authLoading}
                     className="w-full btn-primary py-2"
                   >
-                    {isSubmitting ? 'Entrando...' : 'Entrar'}
+                    {isSubmitting || authLoading ? 'Entrando...' : 'Entrar'}
                   </button>
                 </div>
               </Form>

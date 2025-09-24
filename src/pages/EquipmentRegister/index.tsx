@@ -385,8 +385,9 @@ const EquipmentRegister: React.FC = () => {
       console.log('Registro de equipamento com:', values, photos, certificates);
       
       // Simular registro bem-sucedido e redirecionar
-      navigate('/provider-dashboard', { 
-        state: { message: 'Equipamento cadastrado com sucesso!' } 
+      navigate('/provider/dashboard', {
+        replace: true,
+        state: { success: true, message: 'Equipamento cadastrado com sucesso!' }
       });
     } catch (error) {
       setRegisterError('Falha no cadastro do equipamento. Tente novamente.');

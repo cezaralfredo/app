@@ -34,7 +34,7 @@ interface RegistrationStep2Data {
 }
 
 export const useProviderRegistration = ({ onSuccess, onError }: UseProviderRegistrationProps = {}) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
@@ -110,13 +110,10 @@ export const useProviderRegistration = ({ onSuccess, onError }: UseProviderRegis
       onSuccess?.(provider)
       
       // Redirecionar para dashboard com mensagem de sucesso
-      navigate('/provider-dashboard', {
-        state: { 
-          message: 'Cadastro realizado com sucesso! Seus dados estão em análise.',
-          providerId: provider.id
-        }
-      })
-
+      navigate('/provider/dashboard', {
+        replace: true,
+        state: { success: true, message: 'Cadastro de fornecedor concluído com sucesso!' }
+      });
     } catch (err: any) {
       console.error('Erro no cadastro:', err)
       

@@ -45,7 +45,7 @@ const mockEquipments: Equipment[] = [
     distance: 5.2,
     hourPrice: 180,
     dayPrice: 1200,
-    mainImage: 'https://via.placeholder.com/300x200?text=Munck',
+    mainImage: '/images/equipment/munck.svg',
     location: 'São Paulo, SP',
   },
   {
@@ -60,7 +60,7 @@ const mockEquipments: Equipment[] = [
     distance: 8.7,
     hourPrice: 350,
     dayPrice: 2800,
-    mainImage: 'https://via.placeholder.com/300x200?text=Guindaste',
+    mainImage: '/images/equipment/guindaste.svg',
     location: 'São Paulo, SP',
   },
   {
@@ -75,7 +75,7 @@ const mockEquipments: Equipment[] = [
     distance: 3.1,
     hourPrice: 120,
     dayPrice: 900,
-    mainImage: 'https://via.placeholder.com/300x200?text=Empilhadeira',
+    mainImage: '/images/equipment/empilhadeira.svg',
     location: 'São Paulo, SP',
   },
   {
@@ -90,7 +90,7 @@ const mockEquipments: Equipment[] = [
     distance: 12.5,
     hourPrice: 150,
     dayPrice: 1100,
-    mainImage: 'https://via.placeholder.com/300x200?text=Caminhão+Pipa',
+    mainImage: '/images/equipment/pipa.svg',
     location: 'Guarulhos, SP',
   },
   {
@@ -105,7 +105,7 @@ const mockEquipments: Equipment[] = [
     distance: 7.3,
     hourPrice: 130,
     dayPrice: 950,
-    mainImage: 'https://via.placeholder.com/300x200?text=Guincho',
+    mainImage: '/images/equipment/guincho.svg',
     location: 'Osasco, SP',
   },
   {
@@ -120,7 +120,7 @@ const mockEquipments: Equipment[] = [
     distance: 15.8,
     hourPrice: 280,
     dayPrice: 2200,
-    mainImage: 'https://via.placeholder.com/300x200?text=Escavadeira',
+    mainImage: '/images/equipment/escavadeira.svg',
     location: 'Campinas, SP',
   },
 ];
